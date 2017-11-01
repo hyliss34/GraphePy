@@ -7,7 +7,7 @@ Created on Mon Oct 30 10:31:45 2017
 """
 import sys
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QLineEdit, QTableWidget, QTableWidgetItem, QTabWidget, QApplication, QComboBox, QFormLayout, QGroupBox, QColorDialog, QWidget, QVBoxLayout, QLabel, QHBoxLayout, QPushButton, QFileSystemModel, QTreeView
+from PyQt5.QtWidgets import QFileDialog,  QInputDialog, QLineEdit, QTableWidget, QTableWidgetItem, QTabWidget, QApplication, QComboBox, QFormLayout, QGroupBox, QColorDialog, QWidget, QVBoxLayout, QLabel, QHBoxLayout, QPushButton, QFileSystemModel, QTreeView
 
 
 
@@ -21,50 +21,50 @@ import numpy as np
 import pandas as pd
 
 
-# Fenetre de choix du fichier
-class dialog_fichier(QtWidgets.QDialog):
-    
-    def __init__(self,Main,parent):
-        QtWidgets.QDialog.__init__(self,Main)
+# ----------------------- Fenetre de choix du fichier ------------------
+class App(QWidget):
+ 
+    def __init__(self,Main):
+        super().__init__()
         self.main = Main
-        self.parent = parent
-        self.setWindowTitle("Choix du fichier")
-        
-        # Boite de sialogue avec le systeme de fichier
-        self.model = QFileSystemModel()
-        self.model.setRootPath('/Users')
-        self.tree = QTreeView()
-        self.tree.setModel(self.model)
-        self.tree.doubleClicked.connect(self.choix_fichier)
-        
-        # Bouton ouvrir
-        ouvrir = QtWidgets.QPushButton("ouvrir")
-        ouvrir.clicked.connect(self.choix_fichier)
-        ouvrir.setAutoDefault(True)
-        
-        # Bouton annuler
-        annuler = QtWidgets.QPushButton("annuler")
-        annuler.clicked.connect(self.reject)
-        annuler.setAutoDefault(False)
-        
-        layout = QVBoxLayout()
-        layout.addWidget(self.tree)
-        hb1 = QHBoxLayout()
-        hb1.addWidget(annuler)
-        hb1.addWidget(ouvrir)
-        layout.addLayout(hb1)
-        self.setLayout(layout)
-    
-    def choix_fichier(self):
-        print("d")
-        index = self.tree.currentIndex()
-        print("d")
-        self.main.path = self.model.filePath(index) # recupere le path du fichier cliqué
-        print("d")
-        self.reject() # ferme la fenetre de dialogue
-        print("d")
-        self.main.parse_file() # lance le parse pour remplir les listes x et y
+        self.title = 'PyQt5 file dialogs'
+        self.left = 10
+        self.top = 10
+        self.width = 640
+        self.height = 480
+        self.initUI()
+ 
+    def initUI(self):
+        self.setWindowTitle(self.title)
+        self.setGeometry(self.left, self.top, self.width, self.height)
+ 
+        #self.openFileNameDialog()
+        #self.openFileNamesDialog()
+        #self.saveFileDialog()
 
+ 
+    def openFileNameDialog(self):    
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        fileName, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","All Files (*);;Python Files (*.py)", options=options)
+        if fileName:
+            return fileName
+            
+ 
+    def openFileNamesDialog(self):    
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        files, _ = QFileDialog.getOpenFileNames(self,"QFileDialog.getOpenFileNames()", "","All Files (*);;Python Files (*.py)", options=options)
+        if files:
+            print(files)
+    
+    
+    def saveFileDialog(self):    
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        fileName, _ = QFileDialog.getSaveFileName(self,"QFileDialog.getSaveFileName()","","All Files (*);;Text Files (*.txt)", options=options)
+        if fileName:
+            return fileName
         
  # ------------------- Tab 1 (Graphique) -----------------------------       
 class Tab1(QWidget):
@@ -139,6 +139,12 @@ class Tab1(QWidget):
         self.canvas = FigureCanvas(self.fig)
         parent.tab1.layout.addWidget(self.canvas)
         
+        # Sauvegarde
+        self.sauvegarde = QtWidgets.QPushButton("Save")
+        self.sauvegarde.clicked.connect(self.save_fig)
+        
+        
+        
         # Formulaire
         layout.addRow(self.test)
         layout.addRow(self.choose_file)
@@ -151,18 +157,32 @@ class Tab1(QWidget):
         layout.addRow(QtWidgets.QLabel('Marqueur '), self.mark)
         layout.addRow(QtWidgets.QLabel('Style '), self.linestyle)
         layout.addRow(QtWidgets.QLabel('Epaisseur '), hb_mini)
+        layout.addRow(self.sauvegarde)
         self.formGroupBox.setLayout(layout)
         parent.tab1.layout.addWidget(self.formGroupBox)
         
         # Fonction test   
     def test_func(self):
-        m = np.linspace(0,10,10)
+        print("ok")
+       
+        
+    def save_fig(self):
+        try:
+            file = App(self).saveFileDialog()
+            file.show()
+        finally:
+            self.fig.savefig(file)
 
         
     # Ouvre fenetre de dialogue pour choisir le fichier (class Dialog)
     def ouvre_arborescence(self):
-        Dialog = dialog_fichier(self,self.parent)
-        Dialog.show()
+        try:
+            open_fichier = App(self).openFileNameDialog()
+            open_fichier.show()
+        finally:
+            print(open_fichier)
+            self.path = open_fichier
+            self.parse_file()
     
     # Efface et Retrace le figure 
     def replot_fig(self):
@@ -287,6 +307,7 @@ class Graphiques(QWidget):
         self.setLayout(self.layout)
         
 
+ 
         
         
 
