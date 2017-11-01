@@ -130,6 +130,26 @@ class Tab1(QWidget):
         self.widg_xlabel = QtWidgets.QLineEdit()
         self.widg_ylabel = QtWidgets.QLineEdit()
         
+        # Titre
+        self.titre = QtWidgets.QLineEdit()
+        
+        self.hb_mini2 = QHBoxLayout()
+        # ticks
+        self.ticks_state = 'on'
+        self.ticks = QtWidgets.QCheckBox()
+        self.ticks.setCheckState(2)
+        self.ticks.stateChanged.connect(self.ticks_or_not)
+        
+        # Spines (arretes)
+        self.spine_state = True
+        self.spine = QtWidgets.QCheckBox()
+        self.spine.setCheckState(2)
+        self.spine.stateChanged.connect(self.spine_or_not)
+        
+        self.hb_mini2.addWidget(QtWidgets.QLabel('Ticks '))
+        self.hb_mini2.addWidget(self.ticks)
+        self.hb_mini2.addWidget(QtWidgets.QLabel('Arretes '))
+        self.hb_mini2.addWidget(self.spine)
         
         # Tracer
         self.fig = Figure()
@@ -152,11 +172,13 @@ class Tab1(QWidget):
         layout.addRow(QtWidgets.QLabel("y "), self.coly)
         layout.addRow(QtWidgets.QLabel("Label x"), self.widg_xlabel)
         layout.addRow(QtWidgets.QLabel("Label y"), self.widg_ylabel)
+        layout.addRow(QtWidgets.QLabel("Titre"), self.titre)        
         layout.addRow(self.tracer)
         layout.addRow(self.color_btn)
         layout.addRow(QtWidgets.QLabel('Marqueur '), self.mark)
         layout.addRow(QtWidgets.QLabel('Style '), self.linestyle)
         layout.addRow(QtWidgets.QLabel('Epaisseur '), hb_mini)
+        layout.addRow(self.hb_mini2)
         layout.addRow(self.sauvegarde)
         self.formGroupBox.setLayout(layout)
         parent.tab1.layout.addWidget(self.formGroupBox)
@@ -164,8 +186,10 @@ class Tab1(QWidget):
         # Fonction test   
     def test_func(self):
         print("ok")
+        print(self.ticks.isChecked())
+     
        
-        
+     # Ouvre fenetre de dialogue pour savegarder le graphique 
     def save_fig(self):
         try:
             file = App(self).saveFileDialog()
@@ -174,13 +198,12 @@ class Tab1(QWidget):
             self.fig.savefig(file)
 
         
-    # Ouvre fenetre de dialogue pour choisir le fichier (class Dialog)
+    # Ouvre fenetre de dialogue pour choisir le fichier
     def ouvre_arborescence(self):
         try:
             open_fichier = App(self).openFileNameDialog()
             open_fichier.show()
         finally:
-            print(open_fichier)
             self.path = open_fichier
             self.parse_file()
     
@@ -201,9 +224,22 @@ class Tab1(QWidget):
         
         self.sub1.set_xlabel(self.xlabel)
         self.sub1.set_ylabel(self.ylabel)
+        
+        # Ticks
+        self.sub1.tick_params(bottom=self.ticks_state, left=self.ticks_state)
+        
+        # Titre
+        self.sub1.set_title(self.titre.text())
+        
+        # Spines (ligne de contour)
+        for key,spine in self.sub1.spines.items():
+            spine.set_visible(self.spine_state)
+        
+        
         self.sub1.plot(self.data_x, self.data_y, linestyle=self.current_linestyle,  marker = self.marqueur, color=self.color, linewidth = self.current_linewidth)
         self.canvas.draw()
-        
+
+#------------------------ Fonctions boutons 'live' -----------------------
     def fig_color(self):
         color = QColorDialog.getColor()
         self.color = color.name()
@@ -225,6 +261,24 @@ class Tab1(QWidget):
         
         self.replot_fig()
         
+    # Ticks
+    def ticks_or_not(self):
+        if(self.ticks.isChecked()):
+            self.ticks_state = "on"
+            self.replot_fig()
+        else:
+            self.ticks_state = "off"
+            self.replot_fig() 
+            
+    def spine_or_not(self):
+        if(self.spine.isChecked()):
+            self.spine_state = True
+            self.replot_fig()
+        else:
+            self.spine_state = False
+            self.replot_fig()
+    
+        
     # Utilise les données et la selection x et y pour tracer le graphique
     def Trace(self):
         if(self.colx == 0 or self.coly==0):
@@ -235,7 +289,7 @@ class Tab1(QWidget):
             
             self.replot_fig()
             
-       # recupere les données et remplis les listes déroulantes (x et y)
+     # recupere les données et remplis les listes déroulantes (x et y)
     def parse_file(self):
         
         self.data = pd.read_csv(self.path, delimiter=",")
