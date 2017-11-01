@@ -21,7 +21,9 @@ import numpy as np
 import pandas as pd
 
 
-# ----------------------- Fenetre de choix du fichier ------------------
+####################################################################################################################################################
+###   Fenetre de fichiers
+#####################################################################################################################################################
 class App(QWidget):
  
     def __init__(self,Main):
@@ -66,14 +68,16 @@ class App(QWidget):
         if fileName:
             return fileName
         
- # ------------------- Tab 1 (Graphique) -----------------------------       
+####################################################################################################################################################
+###   Tab 1
+#####################################################################################################################################################     
 class Tab1(QWidget):
     def __init__(self,parent):
         super().__init__()
         self.parent = parent
-        # variable pour le data du fichier
         self.data =[]
-        #BOuton test
+
+        #Bouton test
         self.test = QPushButton("test")
         self.test.clicked.connect(self.test_func)
         
@@ -153,8 +157,7 @@ class Tab1(QWidget):
         
         # Tracer
         self.fig = Figure()
-        self.sub1 = self.fig.add_subplot(111)
-        self.sub1.plot([],[],'r')
+        
         
         self.canvas = FigureCanvas(self.fig)
         parent.tab1.layout.addWidget(self.canvas)
@@ -183,13 +186,15 @@ class Tab1(QWidget):
         self.formGroupBox.setLayout(layout)
         parent.tab1.layout.addWidget(self.formGroupBox)
         
-        # Fonction test   
+
     def test_func(self):
         print("ok")
         print(self.ticks.isChecked())
      
        
-     # Ouvre fenetre de dialogue pour savegarder le graphique 
+    #########################################################
+    ###   Sauvegarde
+    #########################################################
     def save_fig(self):
         try:
             file = App(self).saveFileDialog()
@@ -198,7 +203,9 @@ class Tab1(QWidget):
             self.fig.savefig(file)
 
         
-    # Ouvre fenetre de dialogue pour choisir le fichier
+    #########################################################
+    ###   Ouvrir fichier 
+    #########################################################
     def ouvre_arborescence(self):
         try:
             open_fichier = App(self).openFileNameDialog()
@@ -207,7 +214,9 @@ class Tab1(QWidget):
             self.path = open_fichier
             self.parse_file()
     
-    # Efface et Retrace le figure 
+    #########################################################
+    ###   Replot
+    #########################################################
     def replot_fig(self):
         self.fig.clf() 
         self.sub1 = self.fig.add_subplot(111)
@@ -239,29 +248,26 @@ class Tab1(QWidget):
         self.sub1.plot(self.data_x, self.data_y, linestyle=self.current_linestyle,  marker = self.marqueur, color=self.color, linewidth = self.current_linewidth)
         self.canvas.draw()
 
-#------------------------ Fonctions boutons 'live' -----------------------
+    #########################################################
+    ###   Boutons figure live update (marqueurs, linestyle, linewidth, ticks, arretes
+    #########################################################
     def fig_color(self):
         color = QColorDialog.getColor()
-        self.color = color.name()
-        
+        self.color = color.name()     
         self.replot_fig()
      
     def fig_marqueur(self):
-        self.marqueur = str(self.mark.currentText())
-        
+        self.marqueur = str(self.mark.currentText())    
         self.replot_fig()
 
     def fig_linestyle(self):
-        self.current_linestyle = str(self.linestyle.currentText())
-        
+        self.current_linestyle = str(self.linestyle.currentText())        
         self.replot_fig()
         
     def fig_linewidth(self):
         self.current_linewidth = float(self.linewidth.text())
-        
         self.replot_fig()
         
-    # Ticks
     def ticks_or_not(self):
         if(self.ticks.isChecked()):
             self.ticks_state = "on"
@@ -279,7 +285,9 @@ class Tab1(QWidget):
             self.replot_fig()
     
         
-    # Utilise les données et la selection x et y pour tracer le graphique
+    #########################################################
+    ###   Bouton tracer
+    #########################################################
     def Trace(self):
         if(self.colx == 0 or self.coly==0):
             print("Erreur : Pas de données")
@@ -289,7 +297,9 @@ class Tab1(QWidget):
             
             self.replot_fig()
             
-     # recupere les données et remplis les listes déroulantes (x et y)
+    #########################################################
+    ###   Recuperation des données du fichier
+    #########################################################
     def parse_file(self):
         
         self.data = pd.read_csv(self.path, delimiter=",")
@@ -308,7 +318,9 @@ class Tab1(QWidget):
             self.colx.addItem(i)
             self.coly.addItem(i)
         
-# ---------------------------------------------------------------------------
+####################################################################################################################################################
+###   Tab 2
+#####################################################################################################################################################
 class Tab2(QWidget):
     
     def __init__(self, parent):
@@ -321,7 +333,9 @@ class Tab2(QWidget):
         
         
         
-# ---------------------------------------------------------------------------       
+####################################################################################################################################################
+###   Appli principale
+#####################################################################################################################################################      
 class Graphiques(QWidget):
     
     def __init__(self):
@@ -338,14 +352,15 @@ class Graphiques(QWidget):
         self.tabs = QTabWidget()
         self.tab1 = QWidget()	
         self.tab2 = QWidget()
+        self.tab3 = QWidget()
 
         # Add tabs
         self.tabs.addTab(self.tab1,"Graphique")
         self.tabs.addTab(self.tab2,"Données")
-
-        
+        self.tabs.addTab(self.tab3,"Vide")
         self.tab1.layout = QHBoxLayout()
         self.tab2.layout = QVBoxLayout()
+        
         
 # ------------------- Tab 1 (Graphique) -----------------------------        
         self.TAB1 = Tab1(self)
@@ -355,16 +370,8 @@ class Graphiques(QWidget):
     
         self.tab1.setLayout(self.tab1.layout)
         self.tab2.setLayout(self.tab2.layout)
-        
-        
         self.layout.addWidget(self.tabs)
         self.setLayout(self.layout)
-        
-
- 
-        
-        
-
         
         
         
