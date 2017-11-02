@@ -7,11 +7,11 @@ Created on Mon Oct 30 10:31:45 2017
 """
 import sys
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QFileDialog,  QInputDialog, QLineEdit, QTableWidget, QTableWidgetItem, QTabWidget, QApplication, QComboBox, QFormLayout, QGroupBox, QColorDialog, QWidget, QVBoxLayout, QLabel, QHBoxLayout, QPushButton, QFileSystemModel, QTreeView
+from PyQt5.QtWidgets import QMenu, QMainWindow, QAction, qApp, QApplication, QFileDialog,  QInputDialog, QLineEdit, QTableWidget, QTableWidgetItem, QTabWidget, QApplication, QComboBox, QFormLayout, QGroupBox, QColorDialog, QWidget, QVBoxLayout, QLabel, QHBoxLayout, QPushButton, QFileSystemModel, QTreeView
+from PyQt5.QtGui import QIcon, QCursor
 
 
-
-
+import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -77,6 +77,8 @@ class Tab1(QWidget):
         self.parent = parent
         self.data =[]
 
+
+        
         #Bouton test
         self.test = QPushButton("test")
         self.test.clicked.connect(self.test_func)
@@ -160,7 +162,9 @@ class Tab1(QWidget):
         
         
         self.canvas = FigureCanvas(self.fig)
+        
         parent.tab1.layout.addWidget(self.canvas)
+        self.canvas.mpl_connect('button_press_event', self.Clic_droit_graph)
         
         # Sauvegarde
         self.sauvegarde = QtWidgets.QPushButton("Save")
@@ -189,9 +193,25 @@ class Tab1(QWidget):
 
     def test_func(self):
         print("ok")
-        print(self.ticks.isChecked())
-     
-       
+        
+        
+#########################################################################   
+###   Mouse events
+#########################################################################    
+    def Clic_droit_graph(self,event):
+        if(event.button == 3):
+            self.popMenu = QMenu(self)
+            self.popMenu.addAction("Save", self.save_fig)
+            self.popMenu.addAction("Clear", self.fig_clear)
+            self.popMenu.exec_(QCursor.pos())
+        else:
+            return
+        
+    def fig_clear(self):
+        self.fig.clf()
+        self.canvas.draw()
+
+        
     #########################################################
     ###   Sauvegarde
     #########################################################
@@ -205,7 +225,7 @@ class Tab1(QWidget):
         
     #########################################################
     ###   Ouvrir fichier 
-    #########################################################
+    ######################################################
     def ouvre_arborescence(self):
         try:
             open_fichier = App(self).openFileNameDialog()
@@ -313,7 +333,9 @@ class Tab1(QWidget):
         for i in range(nl):
             for j in range(ncol):
                 self.parent.TAB2.tableau.setItem(i,j,QTableWidgetItem(str(self.data.iloc[i][j])))
-
+            
+        self.colx.clear()
+        self.coly.clear()
         for i in headers:
             self.colx.addItem(i)
             self.coly.addItem(i)
@@ -338,16 +360,16 @@ class Tab2(QWidget):
 #####################################################################################################################################################      
 class Graphiques(QWidget):
     
-    def __init__(self):
-        super().__init__()
+    def __init__(self,parent=None):
+        super().__init__(parent)
         self.setWindowTitle("Graphique")
         self.initUI()
-        self.show()
       
     def initUI(self):
         
-        self.layout = QVBoxLayout()
         
+        
+        self.layout = QtWidgets.QVBoxLayout()
         # Initialize tab screen
         self.tabs = QTabWidget()
         self.tab1 = QWidget()	
@@ -358,8 +380,8 @@ class Graphiques(QWidget):
         self.tabs.addTab(self.tab1,"Graphique")
         self.tabs.addTab(self.tab2,"Données")
         self.tabs.addTab(self.tab3,"Vide")
-        self.tab1.layout = QHBoxLayout()
-        self.tab2.layout = QVBoxLayout()
+        self.tab1.layout = QtWidgets.QHBoxLayout()
+        self.tab2.layout = QtWidgets.QVBoxLayout()
         
         
 # ------------------- Tab 1 (Graphique) -----------------------------        
@@ -372,13 +394,10 @@ class Graphiques(QWidget):
         self.tab2.setLayout(self.tab2.layout)
         self.layout.addWidget(self.tabs)
         self.setLayout(self.layout)
-        
-        
-        
- 
 
 
-      
+
+        
     
 
 
