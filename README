@@ -3,3 +3,6 @@
 Application perso de tracer de graphique.
 Interface avec PyQt5 et tracer avec matplotlib.
 Le traitement des données est fait à l'aide de numpy et pandas.
+
+main.py -> Code pricnipal
+main2.py -> Code de lancement (à lancer pour lancer l'application).
